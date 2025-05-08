@@ -1,15 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <style>
-        body { font-family: Arial, sans-serif; }
-        svg { border: 1px solid #ddd; }
-        .link { stroke: #999; stroke-opacity: 0.6; }
-        .node { cursor: pointer; }
-        .node circle { fill: #69b3a2; stroke: #333; stroke-width: 2; }
-        .node text { font-size: 12px; fill: #333; pointer-events: none; }
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        svg {
+            border: 1px solid #ddd;
+        }
+
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+        }
+
+        .node {
+            cursor: pointer;
+        }
+
+        .node circle {
+            fill: #69b3a2;
+            stroke: #333;
+            stroke-width: 2;
+        }
+
+        .node text {
+            font-size: 12px;
+            fill: #333;
+            pointer-events: none;
+        }
+
         .tooltip {
             position: absolute;
             display: none;
@@ -19,49 +42,55 @@
             font-family: monospace;
             font-size: 12px;
             pointer-events: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             max-width: 200px;
             white-space: pre-wrap;
         }
     </style>
 </head>
 <body>
-<h2>Template Inheritance Graph (Plain JS)</h2>
 <svg width="800" height="600" id="graph"></svg>
 <div class="tooltip" id="tooltip"></div>
 
 <script>
+    function createSVG(type, attrs = {}) {
+        const el = document.createElementNS('http://www.w3.org/2000/svg', type);
+        for (let [k, v] of Object.entries(attrs)) {
+            el.setAttribute(k, v);
+        }
+        return el;
+    }
+
     // Sample data
     const nodes = [
-        { id: 'base-template' },
-        { id: 'child-1' },
-        { id: 'child-2' },
-        { id: 'child-3' },
-        { id: 'child-4' },
-        { id: 'child-5' },
-        { id: 'child-6' },
-        { id: 'child-1-a' },
-        { id: 'child-1-b' },
-        { id: 'child-2-a' },
-        { id: 'child-4-a' },
-        { id: 'child-4-b' }
+        {id: 'base-template'},
+        {id: 'child-1'},
+        {id: 'child-2'},
+        {id: 'child-3'},
+        {id: 'child-4'},
+        {id: 'child-5'},
+        {id: 'child-6'},
+        {id: 'child-1-a'},
+        {id: 'child-1-b'},
+        {id: 'child-2-a'},
+        {id: 'child-4-a'},
+        {id: 'child-4-b'}
     ];
     const links = [
-        { source: 'base-template', target: 'child-1' },
-        { source: 'base-template', target: 'child-2' },
-        { source: 'base-template', target: 'child-3' },
-        { source: 'base-template', target: 'child-4' },
-        { source: 'base-template', target: 'child-5' },
-        { source: 'base-template', target: 'child-6' },
-        { source: 'child-1', target: 'child-1-a' },
-        { source: 'child-1', target: 'child-1-b' },
-        { source: 'child-2', target: 'child-2-a' },
-        { source: 'child-4', target: 'child-4-a' },
-        { source: 'child-4', target: 'child-4-b' }
+        {source: 'base-template', target: 'child-1'},
+        {source: 'base-template', target: 'child-2'},
+        {source: 'base-template', target: 'child-3'},
+        {source: 'base-template', target: 'child-4'},
+        {source: 'base-template', target: 'child-5'},
+        {source: 'base-template', target: 'child-6'},
+        {source: 'child-1', target: 'child-1-a'},
+        {source: 'child-1', target: 'child-1-b'},
+        {source: 'child-2', target: 'child-2-a'},
+        {source: 'child-4', target: 'child-4-a'},
+        {source: 'child-4', target: 'child-4-b'}
     ];
 
     const svg = document.getElementById('graph');
-    const NS = 'http://www.w3.org/2000/svg';
     const width = +svg.getAttribute('width');
     const height = +svg.getAttribute('height');
 
@@ -75,10 +104,12 @@
 
     // Compute depth of each node
     const depthMap = {};
+
     function computeDepth(id, depth) {
         depthMap[id] = depth;
         childrenMap[id].forEach(childId => computeDepth(childId, depth + 1));
     }
+
     computeDepth('base-template', 0);
 
     // Identify leaves and count
@@ -110,18 +141,17 @@
         // y by depth
         node.y = 100 + depthMap[id] * levelHeight;
     }
+
     assignPosition('base-template');
 
     // Draw links
     links.forEach(l => {
-        const src = nodeMap[l.source];
-        const tgt = nodeMap[l.target];
-        const line = document.createElementNS(NS, 'line');
-        line.setAttribute('class', 'link');
-        line.setAttribute('x1', src.x);
-        line.setAttribute('y1', src.y);
-        line.setAttribute('x2', tgt.x);
-        line.setAttribute('y2', tgt.y);
+        const {x: x1, y: y1} = nodeMap[l.source];
+        const {x: x2, y: y2} = nodeMap[l.target];
+        const line = createSVG('line', {
+            class: 'link',
+            x1, y1, x2, y2
+        });
         svg.appendChild(line);
     });
 
@@ -130,34 +160,31 @@
 
     // Draw nodes
     nodes.forEach(n => {
-        const g = document.createElementNS(NS, 'g');
-        g.setAttribute('class', 'node');
-        g.setAttribute('transform', `translate(${n.x},${n.y})`);
+        const g = createSVG('g', {
+            class: 'node',
+            transform: `translate(${n.x},${n.y})`
+        });
 
-        const circle = document.createElementNS(NS, 'circle');
-        circle.setAttribute('r', 20);
-        g.appendChild(circle);
-
-        const text = document.createElementNS(NS, 'text');
-        text.setAttribute('text-anchor', 'middle');
-        text.setAttribute('x', 0);
-        text.setAttribute('y', -25);
+        const circle = createSVG('circle', {r: 20});
+        const text = createSVG('text', {
+            'text-anchor': 'middle',
+            x: 0,
+            y: -25
+        });
         text.textContent = n.id;
-        g.appendChild(text);
 
+        g.append(circle, text);
+
+        // attach your existing event‐listeners
         g.addEventListener('mouseover', event => {
-            const data = { id: n.id, description: `Config for ${n.id}`, settingA: 'valueA', settingB: 123 };
+            const data = {id: n.id, description: `Config for ${n.id}`, settingA: 'valueA', settingB: 123};
             tooltip.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
             tooltip.style.left = event.pageX + 10 + 'px';
             tooltip.style.top = event.pageY + 10 + 'px';
             tooltip.style.display = 'block';
         });
-        g.addEventListener('mouseout', () => {
-            tooltip.style.display = 'none';
-        });
-        g.addEventListener('click', () => {
-            window.open('https://www.google.com', '_blank');
-        });
+        g.addEventListener('mouseout', () => tooltip.style.display = 'none');
+        g.addEventListener('click', () => window.open('https://www.google.com', '_blank'));
 
         svg.appendChild(g);
     });
